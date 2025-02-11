@@ -5,6 +5,66 @@
   <link rel="stylesheet" type="text/css" href="/style.css">
   
   <script>
+    // handle the fetch response
+    const handleResponse = async (response) => {
+      const content = document.getElementById('content');
+
+      // display a message based on the status code received from server
+      switch(response.status) {
+        case 200: // success
+          content.innerHTML = `<b>Success</b>`;
+          break;
+        case 400: // bad request
+          content.innerHTML = `<b>Bad Request</b>`;
+          break;
+        case 401: // unauthorized
+          content.innerHTML = `<b>Unauthorized</b>`;
+          break;
+        case 403: // forbidden
+          content.innerHTML = `<b>Forbidden</b>`;
+          break;
+        case 500: // internal
+          content.innerHTML = `<b>Internal Server Error</b>`;
+          break;
+        case 501: // not implemented
+          content.innerHTML = `<b>Not Implemented</b>`;
+          break;
+        case 404: //not found
+          content.innerHTML = `<b>Not Found</b>`;
+          break;
+        default: // any other codes
+          content.innerHTML = `<b>Status Code Not Implemented By Client</b>`;
+          break;
+      }
+
+      let resObj = await response.json();
+
+      content.innerHTML += `<p>${resObj.message}</p>`;
+    };
+
+    // function to send and handle fetch request
+    const sendFetch = async (url) => {
+      // call fetch and wait for response
+      let response = await fetch(url);
+      //call handleResponse on response
+      handleResponse(response);
+    };
+
+    // starting point of client side code, called when page loads
+    const init = () => {
+      // get references to dropdowns
+      const pageDropdown = document.querySelector('#page');
+      const typeDropdown = document.querySelector('#type');
+      const sendButton = document.querySelector('#send');
+
+      // add event listener to send button
+      sendButton.addEventListener("click", () => {
+        const selectedPage = pageDropdown.value;  // Get selected API route
+        sendFetch(selectedPage);
+      });
+    };
+
+    window.onload = init;
 
   </script>
 </head>
