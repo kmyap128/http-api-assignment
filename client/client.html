@@ -7,7 +7,10 @@
   <script>
     // handle the fetch response
     const handleResponse = async (response) => {
+      const contentType = response.headers.get('Content-Type');
       const content = document.getElementById('content');
+
+      const rawText = await response.text();
 
       // display a message based on the status code received from server
       switch(response.status) {
@@ -37,15 +40,29 @@
           break;
       }
 
-      let resObj = await response.json();
-
-      content.innerHTML += `<p>${resObj.message}</p>`;
+      if (contentType == 'application/json') {
+        let resObj = JSON.parse(rawText);
+        console.log(response.status, response.url);
+        console.log(rawText);
+        content.innerHTML += `<p>${resObj.message}</p>`;
+      }
+      else if (contentType == 'text/xml') {
+        let resObj = new window.DOMParser().parseFromString(rawText, 'text/xml');
+        let message = resObj.querySelector("message")?.textContent 
+        console.log(response.status, response.url);
+        console.log(rawText);
+        content.innerHTML += `<p>${message}</p>`;
+      }
     };
 
     // function to send and handle fetch request
-    const sendFetch = async (url) => {
+    const sendFetch = async (url, acceptedType) => {
+      const options = {
+        method: 'GET',
+        headers: {'Accept': acceptedType},
+      }
       // call fetch and wait for response
-      let response = await fetch(url);
+      let response = await fetch(url, options);
       //call handleResponse on response
       handleResponse(response);
     };
@@ -60,7 +77,8 @@
       // add event listener to send button
       sendButton.addEventListener("click", () => {
         const selectedPage = pageDropdown.value;  // Get selected API route
-        sendFetch(selectedPage);
+        const selectedType = typeDropdown.value;  // Get selected type
+        sendFetch(selectedPage, selectedType);
       });
     };
 

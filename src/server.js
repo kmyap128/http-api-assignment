@@ -1,19 +1,19 @@
 const http = require('http');
 const htmlHandler = require('./htmlResponses.js');
-const jsonHandler = require('./jsonResponses.js');
+const responseHandler = require('./responses.js');
 
 const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
 const urlStruct = {
   '/': htmlHandler.getIndex,
   '/style.css': htmlHandler.getCSS,
-  '/success': jsonHandler.success,
-  '/badRequest': jsonHandler.badRequest,
-  '/unauthorized': jsonHandler.unauthorized,
-  '/forbidden': jsonHandler.forbidden,
-  '/internal': jsonHandler.internal,
-  '/notImplemented': jsonHandler.notImplemented,
-  notFound: jsonHandler.notFound,
+  '/success': responseHandler.success,
+  '/badRequest': responseHandler.badRequest,
+  '/unauthorized': responseHandler.unauthorized,
+  '/forbidden': responseHandler.forbidden,
+  '/internal': responseHandler.internal,
+  '/notImplemented': responseHandler.notImplemented,
+  notFound: responseHandler.notFound,
 
 };
 
@@ -23,6 +23,8 @@ const onRequest = (request, response) => {
   const parsedUrl = new URL(request.url, `${protocol}://${request.headers.host}`);
 
   request.query = Object.fromEntries(parsedUrl.searchParams);
+
+  request.acceptedTypes = request.headers.accept ? request.headers.accept.split(',') : [];
 
   if (urlStruct[parsedUrl.pathname]) {
     urlStruct[parsedUrl.pathname](request, response);
